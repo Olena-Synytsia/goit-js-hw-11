@@ -63,7 +63,14 @@ img {
 
 .container-form-search {
   width: 100%;
-  text-align: center;
+}
+
+.form-search {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
 }
 
 .input-search {
