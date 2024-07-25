@@ -2,7 +2,9 @@
 //   const URL = 'https://pixabay.com/api';
 //   const API_KEY = '45098988-0aca0e44808ea00320f5f0e3c';
 
-//   return fetch(`${URL}?key=${API_KEY}&q=${query}`)
+//   return fetch(
+//     `${URL}?key=${API_KEY}&q=${query}&image_type=photo&orientation=horizontal&safesearch=true`
+//   )
 //     .then(response => {
 //       if (!response.ok) {
 //         throw new Error(response.status);

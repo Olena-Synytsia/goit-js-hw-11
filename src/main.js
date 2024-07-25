@@ -1,6 +1,9 @@
 import iziToast from 'izitoast';
 import 'izitoast/dist/css/iziToast.min.css';
 
+import SimpleLightbox from 'simplelightbox';
+import 'simplelightbox/dist/simple-lightbox.min.css';
+
 // import searchImagesByQuery from './js/pixabay-api';
 
 const form = document.querySelector('.form-search');
@@ -32,45 +35,63 @@ function searchImagesByQuery(query) {
   const URL = 'https://pixabay.com/api';
   const API_KEY = '45098988-0aca0e44808ea00320f5f0e3c';
 
-  return fetch(`${URL}?key=${API_KEY}&q=${query}`)
+  return fetch(
+    `${URL}?key=${API_KEY}&q=${query}&image_type=photo&orientation=horizontal&safesearch=true`
+  )
     .then(response => {
       if (!response.ok) {
         throw new Error(response.status);
       }
       return response.json();
     })
-    .then(data => {
-      if (data.hits.length === 0) {
-        iziToast.info({
-          title: 'Info',
-          message:
-            'Sorry, there are no images matching your search query. Please try again!',
-          position: 'topCenter',
-        });
-        gallery.innerHTML = '';
-      } else {
-        displayImages(data.hits);
-      }
-    })
     .catch(error => {
-      console.log('Error fetching data:', error);
-      iziToast.error({
-        title: 'Error',
-        message: 'Failed to fetch images. Please try again later.',
-        position: 'topCenter',
-      });
+      console.log(error);
     });
 }
 
-// Кінець функції пошуку HTTP запитів
+//  Функції для відображення зображень
 
-function displayImages(images) {
-  gallery.innerHTML = '';
+export function displayImages(images, gallery) {
+  gallery.innerHTML = ''; // Очистка галереї
+  const markupImg = images
+    .map(
+      image => `
+        <a href="${image.largeImageURL}">
+            <img src="${image.webformatURL}" alt="${image.tags}" class="image"/>
+        </a>
+    `
+    )
+    .join('');
+  gallery.innerHTML = markupImg;
+  new SimpleLightbox('.gallery a').refresh(); // Оновлення SimpleLightbox
+}
 
-  images.forEach(image => {
-    const imgEl = document.createElement('img');
-    imgEl.src = image.webformatURL;
-    imgEl.alt = image.tags;
-    imgEl.classList.add(imgEl);
+// функція індикатора завантаження
+
+// export function showLoader(loader)
+function showLoader(loader) {
+  loader.style.display = 'block';
+}
+
+// export function hideLoader(loader)
+function hideLoader(loader) {
+  loader.style.display = 'none';
+}
+
+// export function showError(message)
+function showError(message) {
+  iziToast.error({
+    title: 'Error',
+    message: message,
+    position: 'topCenter',
+  });
+}
+
+// export function showInfo(message)
+function showInfo(message) {
+  iziToast.info({
+    title: 'Info',
+    message: message,
+    position: 'topCenter',
   });
 }
