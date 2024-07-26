@@ -9,6 +9,7 @@ import 'simplelightbox/dist/simple-lightbox.min.css';
 const form = document.querySelector('.form-search');
 const gallery = document.querySelector('.gallery');
 const inputSearch = document.querySelector('.input-search');
+const loader = document.querySelector('.loader');
 
 form.addEventListener('submit', validForm);
 
