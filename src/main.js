@@ -1,98 +1,45 @@
-import iziToast from 'izitoast';
-import 'izitoast/dist/css/iziToast.min.css';
+import { fetchImages } from './js/pixabay-api.js';
+import { createGalleryMarkup, showError } from './js/render-functions.js';
 
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 
-// import searchImagesByQuery from './js/pixabay-api';
-
 const form = document.querySelector('.form-search');
 const gallery = document.querySelector('.gallery');
-const inputSearch = document.querySelector('.input-search');
 const loader = document.querySelector('.loader');
+let lightbox;
 
-form.addEventListener('submit', validForm);
-
-function validForm(event) {
+form.addEventListener('submit', async event => {
   event.preventDefault();
+  const query = event.target.elements['query'].value.trim();
 
-  const query = inputSearch.value.trim();
-
-  if (query === '') {
-    iziToast.error({
-      title: 'Error',
-      message: 'Please enter a search term!',
-      position: 'topCenter',
-    });
+  if (!query) {
+    showError('Search field cannot be empty');
     return;
   }
 
-  searchImagesByQuery(query);
-}
+  loader.style.display = 'flex';
 
-// функція пошуку HTTP запитів
+  try {
+    const images = await fetchImages(query);
 
-function searchImagesByQuery(query) {
-  const URL = 'https://pixabay.com/api';
-  const API_KEY = '45098988-0aca0e44808ea00320f5f0e3c';
-
-  return fetch(
-    `${URL}?key=${API_KEY}&q=${query}&image_type=photo&orientation=horizontal&safesearch=true`
-  )
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(response.status);
-      }
-      return response.json();
-    })
-    .catch(error => {
-      console.log(error);
-    });
-}
-
-//  Функції для відображення зображень
-
-export function displayImages(images, gallery) {
-  gallery.innerHTML = ''; // Очистка галереї
-  const markupImg = images
-    .map(
-      image => `
-        <a href="${image.largeImageURL}">
-            <img src="${image.webformatURL}" alt="${image.tags}" class="image"/>
-        </a>
-    `
-    )
-    .join('');
-  gallery.innerHTML = markupImg;
-  new SimpleLightbox('.gallery a').refresh(); // Оновлення SimpleLightbox
-}
-
-// функція індикатора завантаження
-
-// export function showLoader(loader)
-function showLoader(loader) {
-  loader.style.display = 'block';
-}
-
-// export function hideLoader(loader)
-function hideLoader(loader) {
-  loader.style.display = 'none';
-}
-
-// export function showError(message)
-function showError(message) {
-  iziToast.error({
-    title: 'Error',
-    message: message,
-    position: 'topCenter',
-  });
-}
-
-// export function showInfo(message)
-function showInfo(message) {
-  iziToast.info({
-    title: 'Info',
-    message: message,
-    position: 'topCenter',
-  });
-}
+    if (images.length === 0) {
+      showError(
+        'Sorry, there are no images matching your search query. Please try again!'
+      );
+      gallery.innerHTML = '';
+    } else {
+      gallery.innerHTML = createGalleryMarkup(images);
+      lightbox?.destroy();
+      lightbox = new SimpleLightbox('.gallery-link', {
+        captionsData: 'alt',
+        captionDelay: 250,
+      });
+    }
+  } catch (error) {
+    showError('Failed to fetch images');
+  } finally {
+    loader.style.display = 'none';
+    form.reset();
+  }
+});
